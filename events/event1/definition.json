@@ -1,0 +1,7 @@
+{
+  "name": "event 1",
+  "start": {
+    "module": "handler.js",
+    "function": "start"
+  }
+}
