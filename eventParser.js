@@ -1,34 +1,57 @@
-import * as fs from "node:fs/promises";
+import * as fs from 'node:fs/promises';
+import { parse } from 'node:path';
 
 async function parseEvent(eventFolder) {
-  /*
-   * read event definition from event.json
-   */
-  let eventDefinition = await fs
-    .readFile(`${eventFolder}/definition.json`, "utf-8")
-    .then((data) => JSON.parse(data));
-  console.log(eventDefinition);
+    /*
+     * read event definition from event.json
+     */
+    let eventDefinition = await fs
+        .readFile(`${eventFolder}/definition.json`, 'utf-8')
+        .then((data) => JSON.parse(data));
 
-  const handlerModulePath = `${eventFolder}/${eventDefinition.start.module}`;
-  console.log("handler module path", handlerModulePath);
+    const handlerModulePath = `${eventFolder}/${eventDefinition.start.module}`;
 
-  const handlerModule = await import(handlerModulePath);
-  const startHandler = handlerModule[eventDefinition.start.function];
-  return {
-    name: eventDefinition.name,
-    start: startHandler,
-  };
+    const handlerModule = await import(handlerModulePath);
+    const startHandler = handlerModule[eventDefinition.start.function];
+    return {
+        name: eventDefinition.name,
+        start: startHandler,
+    };
 }
 
-async function readEvents(eventsPath) {
-  /*
-   * read events from defitinion.json under each folder under `events`
-   */
-  const eventFolders = await fs.readdir(eventsPath);
-  console.log(eventFolders);
-  for (const eventFolder of eventFolders) {
-    parseEvent(`${eventsPath}/${eventFolder}`);
-  }
+async function parseEventDependencies(dependenciesFilePath) {
+    /*
+     * read event dependencies from dependencies.json
+     */
+    let eventDependencies = await fs
+        .readFile(dependenciesFilePath, 'utf-8')
+        .then((data) => JSON.parse(data));
+    return eventDependencies;
 }
 
-readEvents("./events");
+async function parseEvents(eventsPath) {
+    /*
+     * read events from defitinion.json under each folder under `events`
+     */
+    const eventFiles = await fs.readdir(eventsPath);
+    const events = [];
+    let dependencies;
+    for (const file of eventFiles) {
+        let stat;
+        stat = await fs.stat(`${eventsPath}/${file}`);
+        if (stat.isDirectory()) {
+            const eventDefinition = await parseEvent(`${eventsPath}/${file}`);
+            events.push(eventDefinition);
+        } else if (stat.isFile() && file === 'dependencies.json') {
+            dependencies = await parseEventDependencies(
+                `${eventsPath}/${file}`,
+            );
+        }
+    }
+    return {
+        events,
+        dependencies,
+    };
+}
+
+const { events, dependencies } = await parseEvents('./events');

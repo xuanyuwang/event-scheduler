@@ -1,0 +1,5 @@
+{
+    "event-1": {
+        "children": ["event-2"]
+    }
+}
