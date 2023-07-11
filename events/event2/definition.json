@@ -1,6 +1,6 @@
 {
-    "name": "event 1",
-    "id": "event-1",
+    "name": "event 2",
+    "id": "event-2",
     "start": {
         "module": "handler.js",
         "function": "start"

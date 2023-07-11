@@ -1,12 +1,13 @@
 {
-  "type": "module",
-  "scripts": {
-    "format": "prettier --write ."
-  },
-  "dependencies": {
-    "@reduxjs/toolkit": "^1.9.5"
-  },
-  "devDependencies": {
-    "prettier": "3.0.0"
-  }
+    "type": "module",
+    "scripts": {
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "@reduxjs/toolkit": "^1.9.5",
+        "typescript": "^5.1.6"
+    },
+    "devDependencies": {
+        "prettier": "3.0.0"
+    }
 }
