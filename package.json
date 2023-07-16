@@ -1,13 +1,16 @@
 {
     "type": "module",
     "scripts": {
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "test": "mocha --recursive './tests/**/*.test.js'"
     },
     "dependencies": {
-        "@reduxjs/toolkit": "^1.9.5",
-        "typescript": "^5.1.6"
+        "@reduxjs/toolkit": "^1.9.5"
     },
     "devDependencies": {
-        "prettier": "3.0.0"
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0",
+        "prettier": "3.0.0",
+        "sinon": "^15.2.0"
     }
 }
