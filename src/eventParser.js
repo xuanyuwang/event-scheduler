@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 export { EventParser, EventDefinition };
 export { EventDependencyParser, EventNode };
+export { generateEventGraph };
 
 class EventDefinition {
     constructor(name, id, start) {
@@ -14,8 +15,9 @@ class EventDefinition {
 }
 
 class Event {
-    constructor(name, eventDefinition, children) {
+    constructor(name, id, eventDefinition, children) {
         this.name = name;
+        this.id = id;
         this.definition = eventDefinition;
         this.children = children;
     }
@@ -48,7 +50,7 @@ class EventParser {
 
         // const handlerModule = await import(handlerModulePath);
         // const startHandler = handlerModule[eventDefinition.start.function];
-        return new Event(eventDefinition.name, eventDefinition, []);
+        return new Event(eventDefinition.name, eventDefinition.id, eventDefinition, []);
     }
 }
 
@@ -149,7 +151,7 @@ class EventDependencyParser {
         const validEventKeys = new Set();
         events.forEach((event) => validEventKeys.add(event.id));
         for (const eventKey of eventNodes.keys()) {
-            if (!events.has(eventKey)) {
+            if (!validEventKeys.has(eventKey)) {
                 throw new Error(
                     `Event ${eventKey} is defined in dependencies.json but not in events folder`,
                 );
@@ -158,27 +160,34 @@ class EventDependencyParser {
     }
 }
 
-async function parseEvents(eventsPath) {
+async function generateEventGraph(eventsPath) {
     /*
      * read events from defitinion.json under each folder under `events`
      */
-    const eventFiles = await fs.readdir(eventsPath);
-    const events = [];
+    const eventFolders = await fs.readdir(eventsPath);
+    const events = new Array();
     let dependencies;
-    for (const file of eventFiles) {
+    for (const file of eventFolders) {
         let stat;
         stat = await fs.stat(`${eventsPath}/${file}`);
         if (stat.isDirectory()) {
-            const eventDefinition = await parseEvent(`${eventsPath}/${file}`);
-            events.push(eventDefinition);
+            const eventFolder = `${eventsPath}/${file}`;
+            const eventDefinition = await EventParser.readEventDefinition(eventFolder);
+            const event = EventParser.buildEventFromDefinition(eventDefinition);
+            events.push(event);
         } else if (stat.isFile() && file === 'dependencies.json') {
-            dependencies = await parseEventDependencies(
+            dependencies = await EventDependencyParser.readEventDependencies(
                 `${eventsPath}/${file}`,
             );
         }
     }
+    const graph = EventDependencyParser.buildEventDependencyGraph(dependencies);
+    const root = EventDependencyParser.findEventDependenciesRoot(graph);
+    EventDependencyParser.validateEventExistences(events, graph);
+    EventDependencyParser.validateEventDependencies(root, graph);
     return {
+        root,
+        graph,
         events,
-        dependencies,
     };
 }

@@ -109,6 +109,8 @@ suite('EventDependencyParser', function () {
                     events,
                     eventNodes,
                 ),
+                Error,
+                /Event .* is defined in dependencies.json but not in events folder/
             );
         });
     });
