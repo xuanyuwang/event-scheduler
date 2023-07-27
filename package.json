@@ -5,7 +5,8 @@
         "test": "mocha --recursive './tests/**/*.test.js'"
     },
     "dependencies": {
-        "@reduxjs/toolkit": "^1.9.5"
+        "@reduxjs/toolkit": "^1.9.5",
+        "config": "^3.3.9"
     },
     "devDependencies": {
         "chai": "^4.3.7",
